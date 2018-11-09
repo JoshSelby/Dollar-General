@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1541798943996.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "EF786E5F",
+    "lastKnownWriteTime" : 3419473789575321445,
+    "last_content_update" : 1541798943996,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "4CBF6281",
+        "caption" : "stores",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=stores&cache_key=4CBF6281",
+        "displayedObservations" : "6833",
+        "environment" : "",
+        "object" : "stores",
+        "preview" : "0",
+        "totalObservations" : "6833",
+        "variables" : "11"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
