@@ -1,11 +1,7 @@
 library(readxl)
 library(rvest)
-library(foreach)
-library(doSNOW)
-library(parallel)
 library(tidyverse)
-library(doMC)
-registerDoMC(cores = 8)
+library(doParallel)
 
 stores <- read_excel("DOLLAR_GENERAL_STORE_LIST.xlsx")
 
@@ -23,10 +19,6 @@ zipScrape <- function(link) {
   
   return(fullAddress)
 }
-
-corpi <- foreach(stores$link, zipScrape, mc.cores = 2)
-
-
 
 
 stores$fullAddress <- NA
