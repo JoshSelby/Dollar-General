@@ -74,31 +74,121 @@ zipScrapeBS <- function(link) {
 # initialize fullAddress column
 stores$fullAddress <- NA
 
-# Scrape about 4600 stores from google maps
+##### Scrape about 4600 stores from google maps #####
 i=1
 for (i in i:nrow(stores)) {
   stores$fullAddress[i] <- zipScrape(stores$link[i])
   print(i)
 }
 
+# Get fixed zip codes
 stores <- stores %>% 
   mutate(zip = substr(fullAddress, nchar(fullAddress)-4, nchar(fullAddress)),
          zip = as.numeric(zip))
 
+# Create storesNA df
+storesNA <- stores %>%
+  filter(is.na(zip))
+
+# Remove state from link
+storesNA <- storesNA %>% 
+  mutate(link = substr(link, 1, nchar(link)-4))
+
+
+# Scrape google maps again but without state
+i=1
+for (i in i:nrow(stores)) {
+  storesNA$fullAddress[i] <- zipScrape(storesNA$link[i])
+  print(i)
+}
+
+# Get fixed zip codes in storesNA df
+storesNA <- storesNA %>% 
+  mutate(zip = substr(fullAddress, nchar(fullAddress)-4, nchar(fullAddress)),
+         zip = as.numeric(zip))
+
+# Join stores and storesNA df. Stores now has ~5700 zips
+stores <- full_join(storesNA, stores %>% filter(!is.na(zip)))
+
+# Reduce storesNA to ~1100 zips
 storesNA <- stores %>%
   filter(is.na(zip))
 
 
-# Scrape from bing search
-storesNA <- storesNA %>%
-  mutate(link = paste(`Address 1` %>% gsub(" ", "%20", .), City %>% gsub(" ", "%20", .), "dollar%20general", sep="%2C"))
+# Save progress so far
+saveRDS(stores, "stores.RDS")
 
+
+###### Scrape from bing search #####
+
+# Create new link format
+storesNA <- storesNA %>%
+  mutate(link = paste(`Address 1` %>% gsub(" ", "%20", .), City %>% gsub(" ", "%20", .), "dollar%20general", sep="%2C"),
+         link = gsub("HWY", "Highway", link),
+         link = gsub("\\#%20|\\#", "", link))
+
+# Begin scraping
 i=1
 for (i in i:nrow(storesNA)) {
   storesNA$fullAddress[i] <- zipScrapeBS(storesNA$link[i])
   print(i)
 }
 
+# Remove stores that defaulted to stores near me
+storesNA <- storesNA %>%
+  mutate(fullAddress = ifelse(fullAddress == "131 Bradford Ave, Crafton, PA 15205", NA, fullAddress),
+         fullAddress = ifelse(fullAddress == "500 Pine Hollow Rd, Mc Kees Rocks, PA 15136", NA, fullAddress))
+
+# Get fixed zip codes in storesNA df
+storesNA <- storesNA %>% 
+  mutate(zip = substr(fullAddress, nchar(fullAddress)-4, nchar(fullAddress)),
+         zip = as.numeric(zip))
+
+# Join stores and storesNA df. Stores now has ~6300 zips
+stores <- full_join(storesNA, stores %>% filter(!is.na(zip)))
+
+# Reduce storesNA to ~550 zips
+storesNA <- stores %>%
+  filter(is.na(zip))
+
+
+# Remove dollar general at end of link
+storesNA <- storesNA %>%
+  mutate(link = paste(`Address 1` %>% gsub(" ", "%20", .), City %>% gsub(" ", "%20", .), sep="%2C"),
+         link = gsub("HWY", "Highway", link),
+         link = gsub("\\#%20|\\#", "", link))
+
+# Begin Scraping
+i=1
+for (i in i:nrow(storesNA)) {
+  storesNA$fullAddress[i] <- zipScrapeBS(storesNA$link[i])
+  print(i)
+}
+
+# Remove stores that defaulted to stores near me
+storesNA <- storesNA %>%
+  mutate(fullAddress = ifelse(fullAddress == "131 Bradford Ave, Crafton, PA 15205", NA, fullAddress),
+         fullAddress = ifelse(fullAddress == "500 Pine Hollow Rd, Mc Kees Rocks, PA 15136", NA, fullAddress))
+
+# Get fixed zip codes in storesNA df
+storesNA <- storesNA %>% 
+  mutate(zip = substr(fullAddress, nchar(fullAddress)-4, nchar(fullAddress)),
+         zip = as.numeric(zip))
+
+# Join stores and storesNA df. Stores now has ~6300 zips
+stores <- full_join(storesNA, stores %>% filter(!is.na(zip)))
+
+# Reduce storesNA to ~550 zips
+storesNA <- stores %>%
+  filter(is.na(zip))
+
+
+
+# Save progress so far
+saveRDS(stores, "stores.RDS")
+
+
+##################################################################################
 stores1 <- full_join(storesNA, stores %>% filter(!is.na(zip))) %>%
   mutate(zip = substr(fullAddress, nchar(fullAddress)-4, nchar(fullAddress)),
          zip = as.numeric(zip))
